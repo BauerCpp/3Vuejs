@@ -12,7 +12,7 @@ export default defineConfig({
     vueJsx(),
     // vueDevTools(),
   ],
-  base: '/3jsVue',
+  base: '/3Vuejs',
   build: {
     outDir: './build'
   },

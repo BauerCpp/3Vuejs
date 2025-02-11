@@ -51,7 +51,6 @@ const aspectRatio = computed(() => width.value / height.value);
 // Door Dimensions (reactive for updates)
 const doorWidth = ref(0.6); // Initial smaller width
 const doorHeight = ref(1.6); // Initial smaller height
-
 // Three.js variables
 const scene = shallowRef<THREE.Scene>(new THREE.Scene());
 const camera = shallowRef<THREE.PerspectiveCamera>(
