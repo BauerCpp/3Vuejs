@@ -15,6 +15,7 @@ coverage
 *.local
 
 /build
+/dist
 /cypress/videos/
 /cypress/screenshots/
 

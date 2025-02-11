@@ -38,8 +38,8 @@ import { useWindowSize } from '@vueuse/core';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
-import doorModel from '../src/assets/Door/frontDoor2.obj?url';
-import doorMaterial from '../src/assets/Door/frontDoor2.mtl?url';
+import doorModel from '../src/Texture/Door/frontDoor2.obj?url';
+import doorMaterial from '../src/Texture/Door/frontDoor2.mtl?url';
 
 // Refs
 const canvasRef = ref<HTMLCanvasElement | null>(null);
@@ -66,7 +66,7 @@ let directLight: THREE.DirectionalLight;
 
 // Constants
 const SHADOW_MAP_SIZE = 2048;
-const path = '../src/assets/SkyBox/Daylight Box_'; // Replace with the correct path to your skybox images
+const path = './3Vuejs/SkyBox/Daylight Box_'; // Replace with the correct path to your skybox images
 const format = '.bmp';
 const urls = [
   path + 'Right' + format,
