@@ -293,7 +293,6 @@ function animate() {
     renderer.value.render(scene.value, camera.value);
   }
 }
-
 // --- Lifecycle Hooks ---
 onMounted(() => {
   initScene();
