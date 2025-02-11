@@ -38,8 +38,8 @@ import { useWindowSize } from '@vueuse/core';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
-import doorModel from '../src/Texture/Door/frontDoor2.obj?url';
-import doorMaterial from '../src/Texture/Door/frontDoor2.mtl?url';
+import doorModel from '/Door/frontDoor2.obj?url';
+import doorMaterial from '/Door/frontDoor2.mtl?url';
 
 // Refs
 const canvasRef = ref<HTMLCanvasElement | null>(null);
