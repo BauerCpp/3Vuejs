@@ -66,7 +66,7 @@ let directLight: THREE.DirectionalLight;
 
 // Constants
 const SHADOW_MAP_SIZE = 2048;
-const path = './3Vuejs/SkyBox/Daylight Box_'; // Replace with the correct path to your skybox images
+const path = '/3Vuejs/SkyBox/Daylight Box_'; // Replace with the correct path to your skybox images
 const format = '.bmp';
 const urls = [
   path + 'Right' + format,
