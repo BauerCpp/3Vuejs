@@ -295,7 +295,6 @@ function animate() {
 }
 
 // --- Lifecycle Hooks ---
-
 onMounted(() => {
   initScene();
   initCamera();

@@ -11,6 +11,6 @@ newmtl wire_115115115
 	Kd 0.4510 0.4510 0.4510
 	Ks 0.3500 0.3500 0.3500
 
-map_Bump wood-bump map.png
+
 map_Kd wood-diffuse map.png
 map_Ns
