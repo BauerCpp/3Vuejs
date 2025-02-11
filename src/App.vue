@@ -309,7 +309,7 @@ onMounted(() => {
   // loadSkybox();
   loadDoor(); // Load the door initially
   updateRendererSize();
-  renderer.value.setAnimationLoop(animate);
+  renderer.value?.setAnimationLoop(animate);
 });
 
 // --- Watchers ---
