@@ -12,7 +12,8 @@ export default defineConfig({
     vueJsx(),
     // vueDevTools(),
   ],
-    build: {
+  base: '/3jsVue',
+  build: {
     outDir: './build'
   },
   publicDir: './public',
