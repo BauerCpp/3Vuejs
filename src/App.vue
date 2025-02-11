@@ -47,7 +47,6 @@ const canvasRef = ref<HTMLCanvasElement | null>(null);
 // Reactive State
 const { width, height } = useWindowSize();
 const aspectRatio = computed(() => width.value / height.value);
-
 // Door Dimensions (reactive for updates)
 const doorWidth = ref(0.6); // Initial smaller width
 const doorHeight = ref(1.6); // Initial smaller height

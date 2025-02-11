@@ -17,6 +17,7 @@ export default defineConfig({
     outDir: './build'
   },
   publicDir: './public',
+  assetsInclude: ['**/*.bmp'],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
