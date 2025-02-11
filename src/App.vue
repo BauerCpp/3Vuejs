@@ -259,7 +259,6 @@ function updateDoorScale() {
   const scaleX = doorWidth.value * 0.10; // Adjust the multiplier to control the size
   const scaleY = doorHeight.value * 0.05; // Adjust the multiplier to control the size
   const scaleZ = 0.05; // Keep Z scale constant
-
   door.value.scale.set(scaleX, scaleY, scaleZ);
 }
 
