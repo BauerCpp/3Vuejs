@@ -10,8 +10,11 @@ export default defineConfig({
   plugins: [
     vue(),
     vueJsx(),
-    vueDevTools(),
+    // vueDevTools(),
   ],
+    build: {
+    outDir: './build'
+  },
   publicDir: './public',
   resolve: {
     alias: {
