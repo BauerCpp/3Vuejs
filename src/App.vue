@@ -50,12 +50,12 @@ const aspectRatio = computed(() => width.value / height.value);
 // Door Dimensions (reactive for updates)
 const doorWidth = ref(1.0); // Initial smaller width
 const doorHeight = ref(1.6); // Initial smaller height
-const previousDoorWidth = ref(doorWidth.value);
-const previousDoorHeight = ref(doorHeight.value);
+let previousDoorWidth = doorWidth.value;
+let previousDoorHeight = doorHeight.value;
 // Three.js variables
 const scene = shallowRef<THREE.Scene>(new THREE.Scene());
 const camera = shallowRef<THREE.PerspectiveCamera>(
-  new THREE.PerspectiveCamera(45, 1, 0.1, 200)
+  new THREE.PerspectiveCamera(45, 1, 0.1, 2000)
 );
 const renderer = shallowRef<THREE.WebGLRenderer>();
 const controls = shallowRef<OrbitControls>();
@@ -88,7 +88,7 @@ function initScene() {
 
 function initCamera() {
   camera.value.aspect = aspectRatio.value;
-  camera.value.position.set(0, 10, 50);
+  camera.value.position.set(0, 200, 700);
   camera.value.lookAt(0, 0, 0);
   camera.value.updateProjectionMatrix();
 }
@@ -123,7 +123,7 @@ function createBox() {
 
   const loader = new THREE.CubeTextureLoader();
   loader.load(urls, (texture) => {
-    console.log(urls, texture);
+    // console.log(urls, texture);
     textureCube = texture;
     shader.uniforms.tCube.value = texture;
     const material = new THREE.ShaderMaterial({
@@ -134,7 +134,7 @@ function createBox() {
       side: THREE.BackSide,
     });
 
-    const mesh = new THREE.Mesh(new THREE.BoxGeometry(100, 100, 100), material);
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(1000, 1000, 1000), material);
     createSphere(texture);
     scene.value.add(sphere);
     scene.value.add(mesh);
@@ -143,30 +143,30 @@ function createBox() {
 
 function createSphere(texureCube: THREE.CubeTexture) {
   sphere = new THREE.Mesh(
-    new THREE.SphereGeometry(2, 32, 32), // Increase segments for smoother sphere
+    new THREE.SphereGeometry(50, 32, 32), // Increase segments for smoother sphere
     new THREE.MeshBasicMaterial({ color: 0xffffff, envMap: texureCube })
   );
-  sphere.position.set(10, 5, 0);
+  sphere.position.set(300, 150, 0);
   sphere.castShadow = true;
   scene.value.add(sphere);
 }
 
 function createKnot() {
   knot = new THREE.Mesh(
-    new THREE.TorusKnotGeometry(2, 0.5, 100, 16), // More detailed knot
+    new THREE.TorusKnotGeometry(50, 10, 100, 16), // More detailed knot
     new THREE.MeshStandardMaterial({
       color: 0x008088,
       roughness: 0.5,
       metalness: 0.1,
     })
   );
-  knot.position.set(0, 5, 15);
+  knot.position.set(-300, 150, 0);
   knot.castShadow = true;
   scene.value.add(knot);
 }
 
 function createPlane() {
-  const planeGeometry = new THREE.PlaneGeometry(100, 100);
+  const planeGeometry = new THREE.PlaneGeometry(1000, 1000);
   const planeMaterial = new THREE.MeshStandardMaterial({
     color: 0x999999,
     side: THREE.DoubleSide,
@@ -190,21 +190,21 @@ function createLights() {
   // directLight.shadow.camera.near = 0.5;
   // directLight.shadow.camera.far = 40;
   // scene.value.add(directLight);
-  const pointLight = new THREE.PointLight(0xffffff, 2000);
-  pointLight.position.set(0, 20, 40);
+  const pointLight = new THREE.PointLight(0xffffff, 100000);
+  pointLight.position.set(0, 200, 200);
   pointLight.castShadow = true;
   pointLight.shadow.mapSize.width = SHADOW_MAP_SIZE;
   pointLight.shadow.mapSize.height = SHADOW_MAP_SIZE;
   pointLight.shadow.camera.near = 0.1;
-  pointLight.shadow.camera.far = 200;
+  pointLight.shadow.camera.far = 2000;
   scene.value.add(pointLight);
 }
 
 function loadSkybox() {
-  console.log(urls);
+  // console.log(urls);
   const loader = new THREE.CubeTextureLoader();
   loader.load(urls, (texture) => {
-    console.log(urls, texture);
+    // console.log(urls, texture);
     scene.value.background = texture;
   });
 }
@@ -236,7 +236,7 @@ function loadDoor() {
             .setFromObject(door.value)
             .getSize(sizes);
 
-          updateDoorScale(sizes); // Call update after loading
+          // updateDoorScale(sizes); // Call update after loading
           centerDoor();
         },
         (xhr) => {
@@ -263,7 +263,8 @@ function updateDoorSizes() {
 }
 
 function setGeometryWidth() {
-  const widthChange = (doorWidth.value - previousDoorWidth.value) * 25; // Divided by 2 because modify two sides
+  const widthChange = (doorWidth.value - previousDoorWidth) * 25; // Divided by 2 because modify two sides
+  previousDoorWidth = doorWidth.value;
   door.value?.traverse(
     (child: any) =>
     {
@@ -285,16 +286,17 @@ function setGeometryWidth() {
 
           position.setXYZ(i, vertex.x, vertex.y, vertex.z);
         }
-
-        position.needsUpdate = true;
+        child.geometry.computeBoundingBox();
+          position.needsUpdate = true;
       }
     });
-  previousDoorWidth.value = doorWidth.value;
 }
 
 function setGeometryHeight() {
-  const heightChange = (doorHeight.value - previousDoorHeight.value) * 25; // Divided by 2 because modify two sides
-  previousDoorHeight.value = doorHeight.value;
+  const heightChange = (doorHeight.value - previousDoorHeight) * 25; // Divided by 2 because modify two sides
+  previousDoorHeight = doorHeight.value;
+  const center = new THREE.Vector3();
+  doorBox.getCenter(center);
   door.value?.traverse(
     (child: any) =>
     {
@@ -304,10 +306,11 @@ function setGeometryHeight() {
         const position = child.geometry.getAttribute("position");
         const vertex = new THREE.Vector3();
 
+        console.log(center, heightChange)
         for (let i = 0; i < position.count; i++) {
           vertex.fromBufferAttribute(position, i);
 
-          if (vertex.y < 0) {
+          if (vertex.y < center.y / 4) {
             vertex.y -= heightChange;
           }
           else {
@@ -342,12 +345,15 @@ function updateDoorScale(sizes) {
     console.warn('Door OBJ not loaded yet.');
     return;
   }
-  const scaleX = (doorWidth.value / sizes.x) * 50;
-  const scaleY = (doorHeight.value / sizes.y) * 50;
+  const scaleX = (doorWidth.value / sizes.x) * 10;
+  const scaleY = (doorHeight.value / sizes.y) * 10;
   const scaleZ = 0.25; // Keep Z scale constant
 
   door.value.traverse((child: any) => {
-    child.scale.set(scaleX, scaleY, scaleZ);
+    if (child instanceof THREE.Mesh) {
+      child.scale.set(scaleX, scaleY, scaleZ);
+      child.geometry.computeBoundingBox();
+    }
   })
   // Scaling factors based on the input values.  Adjust as needed.
 }
