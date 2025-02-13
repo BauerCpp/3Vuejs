@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <form @submit.prevent="updateDoor">
+    <form @submit.prevent="setGeometryWidth">
       <div class="form-group">
         <label for="doorWidth">Door Width (0.6 - 1.5):</label>
         <input
@@ -9,11 +9,10 @@
           v-model.number="doorWidth"
           min="0.6"
           max="1.5"
-          step="0.01"
+          step="0.1"
         />
-      </div>
 
-      <div class="form-group">
+      <!-- <div class="form-group">
         <label for="doorHeight">Door Height (1.0 - 2.5):</label>
         <input
           type="number"
@@ -22,7 +21,7 @@
           min="1.0"
           max="2.5"
           step="0.01"
-        />
+        /> -->
       </div>
 
       <button type="submit">Update Door</button>
@@ -48,8 +47,10 @@ const canvasRef = ref<HTMLCanvasElement | null>(null);
 const { width, height } = useWindowSize();
 const aspectRatio = computed(() => width.value / height.value);
 // Door Dimensions (reactive for updates)
-const doorWidth = ref(0.6); // Initial smaller width
+const doorWidth = ref(1.0); // Initial smaller width
 const doorHeight = ref(1.6); // Initial smaller height
+const previousDoorWidth = ref(doorWidth.value);
+const previousDoorHeight = ref(doorHeight.value);
 // Three.js variables
 const scene = shallowRef<THREE.Scene>(new THREE.Scene());
 const camera = shallowRef<THREE.PerspectiveCamera>(
@@ -58,6 +59,7 @@ const camera = shallowRef<THREE.PerspectiveCamera>(
 const renderer = shallowRef<THREE.WebGLRenderer>();
 const controls = shallowRef<OrbitControls>();
 const door = shallowRef<THREE.Object3D | null>(null); // Initialize as null
+const doorBox = new THREE.Box3();
 let textureCube: THREE.CubeTexture;
 let sphere: THREE.Mesh;
 let knot: THREE.Mesh;
@@ -227,8 +229,14 @@ function loadDoor() {
               child.receiveShadow = true;
             }
           });
+          const sizes = new THREE.Vector3();
 
-          updateDoorScale(); // Call update after loading
+          doorBox
+            .setFromObject(door.value)
+            .getSize(sizes);
+
+          updateDoorScale(sizes); // Call update after loading
+          centerDoor();
         },
         (xhr) => {
           console.log(`${(xhr.loaded / xhr.total) * 100}% loaded`);
@@ -247,17 +255,65 @@ function loadDoor() {
   );
 }
 
-function updateDoorScale() {
+function setGeometryWidth() {
+  const widthChange = (doorWidth.value - previousDoorWidth.value) * 25; // Divided by 2 because modify two sides
+  door.value?.traverse(
+    (child: any) =>
+    {
+      if (child instanceof THREE.Mesh) {
+        child.castShadow = true;
+        child.receiveShadow = true;
+        const position = child.geometry.getAttribute("position");
+        const vertex = new THREE.Vector3();
+
+        for (let i = 0; i < position.count; i++) {
+          vertex.fromBufferAttribute(position, i);
+
+          if (vertex.x < 0) {
+            vertex.x -= widthChange;
+          }
+          else {
+            vertex.x += widthChange;
+          }
+
+          position.setXYZ(i, vertex.x, vertex.y, vertex.z);
+        }
+
+        position.needsUpdate = true;
+      }
+    });
+
+  centerDoor();
+  previousDoorWidth.value = doorWidth.value;
+}
+
+function centerDoor() {
+  if (!door.value) return;
+
+  // Update the bounding box
+  doorBox.setFromObject(door.value);
+
+  const center = new THREE.Vector3();
+  doorBox.getCenter(center);
+
+  // Set the door's X position to be the negative of the center's X.
+  // This effectively centers the door at X = 0.
+  door.value.position.x -= center.x;
+}
+
+function updateDoorScale(sizes) {
   if (!door.value) {
     console.warn('Door OBJ not loaded yet.');
     return;
   }
+  const scaleX = (doorWidth.value / sizes.x) * 50;
+  const scaleY = (doorHeight.value / sizes.y) * 50;
+  const scaleZ = 0.25; // Keep Z scale constant
 
+  door.value.traverse((child: any) => {
+    child.scale.set(scaleX, scaleY, scaleZ);
+  })
   // Scaling factors based on the input values.  Adjust as needed.
-  const scaleX = doorWidth.value * 0.10; // Adjust the multiplier to control the size
-  const scaleY = doorHeight.value * 0.05; // Adjust the multiplier to control the size
-  const scaleZ = 0.05; // Keep Z scale constant
-  door.value.scale.set(scaleX, scaleY, scaleZ);
 }
 
 function updateDoor() {
