@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <form @submit.prevent="setGeometryWidth">
+    <form @submit.prevent="updateDoorSizes">
       <div class="form-group">
         <label for="doorWidth">Door Width (0.6 - 1.5):</label>
         <input
@@ -12,7 +12,7 @@
           step="0.1"
         />
 
-      <!-- <div class="form-group">
+      <div class="form-group">
         <label for="doorHeight">Door Height (1.0 - 2.5):</label>
         <input
           type="number"
@@ -21,8 +21,9 @@
           min="1.0"
           max="2.5"
           step="0.01"
-        /> -->
+        />
       </div>
+    </div>
 
       <button type="submit">Update Door</button>
     </form>
@@ -255,6 +256,12 @@ function loadDoor() {
   );
 }
 
+function updateDoorSizes() {
+  setGeometryWidth();
+  setGeometryHeight();
+  centerDoor();
+}
+
 function setGeometryWidth() {
   const widthChange = (doorWidth.value - previousDoorWidth.value) * 25; // Divided by 2 because modify two sides
   door.value?.traverse(
@@ -282,9 +289,37 @@ function setGeometryWidth() {
         position.needsUpdate = true;
       }
     });
-
-  centerDoor();
   previousDoorWidth.value = doorWidth.value;
+}
+
+function setGeometryHeight() {
+  const heightChange = (doorHeight.value - previousDoorHeight.value) * 25; // Divided by 2 because modify two sides
+  previousDoorHeight.value = doorHeight.value;
+  door.value?.traverse(
+    (child: any) =>
+    {
+      if (child instanceof THREE.Mesh) {
+        child.castShadow = true;
+        child.receiveShadow = true;
+        const position = child.geometry.getAttribute("position");
+        const vertex = new THREE.Vector3();
+
+        for (let i = 0; i < position.count; i++) {
+          vertex.fromBufferAttribute(position, i);
+
+          if (vertex.y < 0) {
+            vertex.y -= heightChange;
+          }
+          else {
+            vertex.y += heightChange;
+          }
+
+          position.setXYZ(i, vertex.x, vertex.y, vertex.z);
+        }
+        position.needsUpdate = true;
+        child.geometry.computeBoundingBox();
+      }
+    });
 }
 
 function centerDoor() {
@@ -299,6 +334,7 @@ function centerDoor() {
   // Set the door's X position to be the negative of the center's X.
   // This effectively centers the door at X = 0.
   door.value.position.x -= center.x;
+  door.value.position.y -= doorBox.min.y;
 }
 
 function updateDoorScale(sizes) {
